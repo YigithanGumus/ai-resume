@@ -1,61 +1,293 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📄 AI-Powered Resume & Cover Letter Generator – Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This project is a backend service built with **Laravel** and **OpenAI API** that generates professional resumes and cover letters with AI support.
 
-## About Laravel
+Users can input their CV data through a form or provide it in JSON format. The backend uses GPT models to create a professional **Resume & Cover Letter** and offers **PDF exports** in multiple templates.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Features
+- 🧠 **AI (OpenAI GPT) integration** → Generates professional resumes & cover letters
+- 🌍 **Multi-language support** → English & Turkish
+- 🎨 **3 different PDF templates** → `modern`, `minimalist`, `classic`
+- 📄 **JSON response or PDF export** options
+- ⚡ **Export directly from ready resume & cover letter JSON** (faster, no AI call)
+- ✅ Laravel Form Request with validation & error handling
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📂 Project Structure
+```
+app/
+ ├── Http/Controllers/AIController.php
+ ├── Http/Requests/GenerateRequest.php
+ ├── Services/OpenAIService.php
+ ├── Services/PdfExportService.php
+resources/views/pdf/
+ ├── modern.blade.php
+ ├── minimalist.blade.php
+ └── classic.blade.php
+routes/
+ └── api.php
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ⚙️ Installation
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Clone the repository
+```bash
+git clone https://github.com/username/ai-resume-generator-backend.git
+cd ai-resume-generator-backend
+```
 
-## Laravel Sponsors
+### 2. Install dependencies
+```bash
+composer install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 3. Configure environment variables
+Add to `.env`:
+```env
+OPENAI_API_KEY=sk-xxxxxx
+```
 
-### Premium Partners
+### 4. Run server
+```bash
+php artisan serve
+```
+Backend will run at `http://127.0.0.1:8000`.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## 🔌 API Endpoints
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 1️⃣ Generate Resume & Cover Letter (JSON)
+`POST /api/generate`  
+Request Body:
+```json
+{
+  "language": "en",
+  "cv": {
+    "name": "Yiğithan Gümüş",
+    "title": "Full-Stack Developer",
+    "skills": ["Laravel", "Vue.js", "Docker"],
+    "experience": [
+      {"company": "YG Soft.", "role": "Frontend Developer", "years": "2022 - 2025"}
+    ]
+  }
+}
+```
+Response:
+```json
+{
+  "resume": "Generated resume text...",
+  "cover_letter": "Generated cover letter..."
+}
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2️⃣ Generate Resume & Cover Letter PDF (via AI)
+`POST /api/export-pdf`  
+Request Body:
+```json
+{
+  "language": "tr",
+  "template": "modern",
+  "cv": {
+    "name": "Yiğithan Gümüş",
+    "title": "Full-Stack Developer",
+    "skills": ["Laravel", "Vue.js", "Docker"]
+  }
+}
+```
+📎 Response: PDF download `resume-coverletter.pdf`
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 3️⃣ Export Ready Resume & Cover Letter to PDF (no AI call)
+`POST /api/export-ready-pdf`  
+Request Body:
+```json
+{
+  "resume": "Yiğithan Gümüş\nFull-Stack Developer...",
+  "cover_letter": "Dear HR, ...",
+  "template": "classic"
+}
+```
+📎 Response: PDF download `resume-coverletter.pdf`
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🎨 PDF Templates
+- **modern.blade.php** → Modern, blue highlights
+- **minimalist.blade.php** → Clean & simple
+- **classic.blade.php** → Traditional Times New Roman
+
+---
+
+## 🛠️ Technologies Used
+- **Laravel 10+**
+- **OpenAI PHP Client**
+- **barryvdh/laravel-dompdf** (PDF export)
+
+---
+
+## 📌 Notes
+- Use **Send and Download** in Postman to correctly download PDFs.
+- Add caching if many AI requests are made.
+- For advanced designs, consider **Browsershot (Puppeteer)** instead of DomPDF.
+
+---
+
+## 📜 License
+MIT License
+
+---
+
+# 📄 AI Destekli Özgeçmiş & Ön Yazı Oluşturucu – Backend
+
+Bu proje, **Laravel** ve **OpenAI API** kullanılarak geliştirilmiş bir **AI destekli özgeçmiş (Resume) ve ön yazı (Cover Letter) oluşturucu backend servisidir**.
+
+Kullanıcılar CV bilgilerini bir form aracılığıyla veya JSON formatında girebilir. Backend, GPT modellerini kullanarak profesyonel bir **Resume & Cover Letter** üretir ve farklı şablonlarda **PDF çıktısı** sunar.
+
+---
+
+## 🚀 Özellikler
+- 🧠 **AI (OpenAI GPT) entegrasyonu** → profesyonel Resume & Cover Letter üretir
+- 🌍 **Çok dil desteği** → Türkçe & İngilizce
+- 🎨 **3 farklı PDF şablonu** → `modern`, `minimalist`, `classic`
+- 📄 **JSON response veya PDF export** seçenekleri
+- ⚡ **Hazır resume & cover letter JSON’dan PDF üretme** (AI çağrısı yapmadan hızlı)
+- ✅ Laravel Form Request ile validation & error handling
+
+---
+
+## 📂 Proje Yapısı
+```
+app/
+ ├── Http/Controllers/AIController.php
+ ├── Http/Requests/GenerateRequest.php
+ ├── Services/OpenAIService.php
+ ├── Services/PdfExportService.php
+resources/views/pdf/
+ ├── modern.blade.php
+ ├── minimalist.blade.php
+ └── classic.blade.php
+routes/
+ └── api.php
+```
+
+---
+
+## ⚙️ Kurulum
+
+### 1. Projeyi indir
+```bash
+git clone https://github.com/kullanici/ai-resume-generator-backend.git
+cd ai-resume-generator-backend
+```
+
+### 2. Bağımlılıkları yükle
+```bash
+composer install
+```
+
+### 3. Ortam değişkenlerini ayarla
+`.env` dosyasına:
+```env
+OPENAI_API_KEY=sk-xxxxxx
+```
+
+### 4. Server’ı çalıştır
+```bash
+php artisan serve
+```
+Backend `http://127.0.0.1:8000` adresinde çalışacaktır.
+
+---
+
+## 🔌 API Endpoint’leri
+
+### 1️⃣ Resume & Cover Letter JSON Alma
+`POST /api/generate`  
+Request Body:
+```json
+{
+  "language": "en",
+  "cv": {
+    "name": "Yiğithan Gümüş",
+    "title": "Full-Stack Developer",
+    "skills": ["Laravel", "Vue.js", "Docker"],
+    "experience": [
+      {"company": "YG Software", "role": "Backend Developer", "years": "2022 - 2025"}
+    ]
+  }
+}
+```
+Response:
+```json
+{
+  "resume": "Oluşturulmuş resume metni...",
+  "cover_letter": "Oluşturulmuş ön yazı..."
+}
+```
+
+---
+
+### 2️⃣ Resume & Cover Letter PDF Alma (AI üzerinden)
+`POST /api/export-pdf`  
+Request Body:
+```json
+{
+  "language": "tr",
+  "template": "modern",
+  "cv": {
+    "name": "Yiğithan Gümüş",
+    "title": "Full-Stack Developer",
+    "skills": ["Laravel", "Vue.js", "Docker"]
+  }
+}
+```
+📎 Response: `resume-coverletter.pdf` dosyası iner.
+
+---
+
+### 3️⃣ Hazır JSON’dan PDF Alma (AI’siz, hızlı)
+`POST /api/export-ready-pdf`  
+Request Body:
+```json
+{
+  "resume": "Yiğithan Gümüş\nFull-Stack Developer...",
+  "cover_letter": "Sayın İnsan Kaynakları, ...",
+  "template": "classic"
+}
+```
+📎 Response: `resume-coverletter.pdf` dosyası iner.
+
+---
+
+## 🎨 PDF Şablonları
+- **modern.blade.php** → Modern, mavi vurgular
+- **minimalist.blade.php** → Basit & temiz
+- **classic.blade.php** → Klasik Times New Roman
+
+---
+
+## 🛠️ Kullanılan Teknolojiler
+- **Laravel 10+**
+- **OpenAI PHP Client**
+- **barryvdh/laravel-dompdf** (PDF export)
+
+---
+
+## 📌 Notlar
+- Postman’de **Send and Download** seçeneği ile PDF indirilebilir.
+- Çok sayıda AI çağrısı yapılacaksa cache mekanizması eklenebilir.
+- Daha gelişmiş tasarımlar için DomPDF yerine **Browsershot (Puppeteer)** kullanılabilir.
+
+---
+
+## 📜 Lisans
+MIT License  
