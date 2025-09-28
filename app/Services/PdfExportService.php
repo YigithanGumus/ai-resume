@@ -2,23 +2,27 @@
 
 namespace App\Services;
 
-use Barryvdh\DomPDF\Facade\Pdf;
+use Spatie\Browsershot\Browsershot;
 
 class PdfExportService
 {
-    public function generatePdf(string $resume, string $coverLetter, string $template = 'modern')
+    public function fromHtml(string $html)
     {
-        $view = in_array($template, ['modern', 'minimalist', 'classic']) ? $template : 'modern';
+        $tempHtml = storage_path('app/temp_resume.html');
+        $pdfPath  = storage_path('app/resume-coverletter.pdf');
 
-        $pdf = Pdf::loadView("pdf.$view", [
-            'resume' => $resume,
-            'coverLetter' => $coverLetter,
-        ])->setPaper('a4');
+        file_put_contents($tempHtml, $html);
 
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'resume-coverletter.pdf', [
+        Browsershot::html(file_get_contents($tempHtml))
+            ->format('A4')
+            ->showBackground()
+            ->margins(20, 20, 20, 20)
+            ->waitUntilNetworkIdle()
+            ->save($pdfPath);
+
+        return response()->download($pdfPath, 'resume.pdf', [
             'Content-Type' => 'application/pdf',
-        ]);
+            'Content-Disposition' => 'attachment; filename="resume.pdf"',
+        ])->deleteFileAfterSend(true);
     }
 }
