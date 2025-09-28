@@ -33,7 +33,7 @@ routes/
 ## ⚙️ Installation
 
 ### 1. Clone the repository
-git clone https://github.com/username/ai-resume-generator-backend.git
+git clone https://github.com/YigithanGumus/ai-resume-generator-backend.git
 cd ai-resume-generator-backend
 
 ### 2. Install dependencies
@@ -91,7 +91,7 @@ routes/
 ## ⚙️ Kurulum
 
 ### 1. Projeyi indir
-git clone https://github.com/kullanici/ai-resume-generator-backend.git
+git clone https://github.com/YigithanGumus/ai-resume-generator-backend.git
 cd ai-resume-generator-backend
 
 ### 2. Bağımlılıkları yükle
