@@ -10,56 +10,50 @@ class OpenAIService
 
     public function __construct()
     {
-        $this->client = OpenAI::client(env('OPENAI_API_KEY'));
+        $this->client = OpenAI::client(config('services.openai.key'));
     }
 
-    public function generateResumeAndCover(array $cv, string $language = 'en'): array
+    public function generateHtmlTemplate(array $cv, string $style = 'modern', string $design = ''): string
     {
-        $prompt = $this->buildPrompt($cv, $language);
+        $cvJson = json_encode($cv, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        $prompt = <<<EOT
+You are a professional HTML/CSS designer for resumes.
+Generate ONLY a professional Resume (no cover letter).
+Language: {$style}
+User design request: "{$design}"
+
+Input CV data (JSON):
+{$cvJson}
+
+Rules:
+- Create an outstanding, visually impressive CV layout based on the user's request.
+- Must look like a real designer-made CV, not plain HTML.
+- Left column (if exists): contact info, skills, summary. Use icons (☎ ✉ 🌍).
+- Right column: professional summary, experience, education, projects, languages.
+- Use background colors, highlights (#2563eb or requested colors), subtle shadows, spacing.
+- Skills should be shown with progress bars or styled badges.
+- Add placeholder for a profile photo (circle at top-left).
+- Use inline CSS only (Browsershot compatible), UTF-8 safe.
+- Do not include Markdown or code fences.
+- Return full valid HTML (<html>...</html>).
+EOT;
 
         $response = $this->client->chat()->create([
             'model' => 'gpt-4o-mini',
             'messages' => [
-                ['role' => 'system', 'content' => "You are a professional CV and cover letter writer."],
+                ['role' => 'system', 'content' => "You generate professional PDF-ready HTML resumes."],
                 ['role' => 'user', 'content' => $prompt],
             ],
-            'temperature' => 0.7
         ]);
 
-        $result = $response->choices[0]->message->content ?? '';
+        $html = $response->choices[0]->message->content ?? '';
 
-        // JSON çıktıyı yakalamak için
-        $json = json_decode($result, true);
+        // Kod bloklarını temizle
+        $html = preg_replace('/^```html/i', '', $html);
+        $html = preg_replace('/```$/i', '', $html);
+        $html = trim($html);
 
-        if (json_last_error() === JSON_ERROR_NONE && isset($json['resume']) && isset($json['cover_letter'])) {
-            return $json;
-        }
-
-        // fallback: regex parsing
-        preg_match('/\[RESUME\](.*?)\[COVER LETTER\](.*)/s', $result, $matches);
-
-        return [
-            'resume' => trim($matches[1] ?? ''),
-            'cover_letter' => trim($matches[2] ?? ''),
-        ];
-    }
-
-    private function buildPrompt(array $cv, string $language): string
-    {
-        $cvJson = json_encode($cv, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-
-        return <<<EOT
-You are given CV data in JSON:
-
-$cvJson
-
-Generate a professional Resume and Cover Letter in $language.
-Return output strictly as JSON in this format:
-
-{
-  "resume": "...",
-  "cover_letter": "..."
-}
-EOT;
+        return $html;
     }
 }
