@@ -3,43 +3,37 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Http\Requests\GenerateRequest;
 use App\Services\OpenAIService;
 use App\Services\PdfExportService;
 
 class AIController extends Controller
 {
     protected $openAI;
-    protected $pdfExport;
+    protected $pdf;
 
-    public function __construct(OpenAIService $openAI, PdfExportService $pdfExport)
+    public function __construct(OpenAIService $openAI, PdfExportService $pdf)
     {
         $this->openAI = $openAI;
-        $this->pdfExport = $pdfExport;
+        $this->pdf = $pdf;
     }
 
-    public function generate(GenerateRequest $request)
+    public function exportPdf(Request $request)
     {
-        $data = $this->openAI->generateResumeAndCover(
-            $request->cv,
-            $request->language ?? 'en'
-        );
+        $request->validate([
+            'language' => 'required|string|in:en,tr',
+            'template' => 'nullable|string|in:modern,minimalist,classic',
+            'design'   => 'nullable|string',
+            'cv'       => 'required|array',
+        ]);
 
-        return response()->json($data);
-    }
+        $cv     = $request->cv;
+        $style  = $request->template ?? 'modern';
+        $design = $request->design ?? 'Profesyonel ve modern bir CV istiyorum.';
 
-    public function exportPdf(GenerateRequest $request)
-    {
-        $data = $this->openAI->generateResumeAndCover(
-            $request->cv,
-            $request->language ?? 'en'
-        );
+        // GPT'den HTML template üret
+        $html = $this->openAI->generateHtmlTemplate($cv, $style, $design);
 
-        return $this->pdfExport->generatePdf(
-            $data['resume'],
-            $data['cover_letter'],
-            $request->template ?? 'modern'
-        );
+        // PDF üret
+        return $this->pdf->fromHtml($html);
     }
 }
